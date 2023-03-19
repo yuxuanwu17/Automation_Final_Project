@@ -1,7 +1,8 @@
 from sklearn.metrics import confusion_matrix, accuracy_score
 from sklearn.linear_model import LogisticRegression
 
-from utils import _get_performance, _get_train_test_split
+from utils import _get_performance, _get_train_test_split, _get_passive_index_split, _active_learning_simulation, \
+    result_logging, timeit
 
 
 def lr_machine_learning():
@@ -18,7 +19,13 @@ def lr_machine_learning():
     _get_performance(clf, X_test, y_test, y_pred)
 
 
+@timeit
+def lr_passive_learning():
+    X, y, observed_idx = _get_passive_index_split()
+    res = _active_learning_simulation(X, y, "lr", observed_idx)
+    result_logging(res, "lr_acc_res.txt")
 
 
 if __name__ == '__main__':
-    lr_machine_learning()
+    # lr_machine_learning()
+    lr_passive_learning()

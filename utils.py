@@ -1,3 +1,6 @@
+import time
+from functools import wraps
+
 import numpy as np
 import pandas as pd
 import random
@@ -22,6 +25,21 @@ def _get_train_test_split():
     X_train = StandardScaler().fit_transform(training_data.drop("disposition", axis=1))
     X_test = StandardScaler().fit_transform(testing_data.drop("disposition", axis=1))
     return X_train, y_train, X_test, y_test
+
+
+def _get_passive_index_split(init_observed=100_000):
+    np.random.seed(33)
+    df = pd.read_csv("./data/featureSelectedAllDataWithY.csv")
+    print(df.shape)
+    y = df['disposition'].values
+    X = StandardScaler().fit_transform(df.drop("disposition", axis=1))
+    print("X's type", type(X))
+    print("y's type", type(y))
+    total_num = len(X)
+    print("total number for init", total_num)
+    observed_idx = np.random.choice(len(X), init_observed, replace=False)
+    print("init number for observed index", len(observed_idx))
+    return X, y, observed_idx
 
 
 def _get_performance(clf, X_test, y_test, y_pred):
@@ -96,7 +114,7 @@ def _init_fixed_20_samples_lr(X, y, observed_idx, criterion):
     return observed_accuracy_scores, model, X_unobserved, y_unobserved, X_observed, y_observed, unobserved_idx
 
 
-def _active_learning_simulation(X, y, criterion, observed_idx):
+def _active_learning_simulation(X, y, criterion, observed_idx, num_per_round=10_000):
     """
     Your simulation should start with twenty (20) random observations
     Stopping criterion is different, in this case, stop until you have no observation remaining
@@ -109,53 +127,71 @@ def _active_learning_simulation(X, y, criterion, observed_idx):
     as a function of the number of instances in the training data set.
 
     """
-    X = X.values
-    y = y.values
-
-    observed_res = []
     observed_accuracy_scores, model, X_unobserved, y_unobserved, X_observed, y_observed, unobserved_idx = _init_fixed_20_samples_lr(
         X, y, observed_idx, criterion)
 
     # key component in adjusting the criterion used
-    most_uncertain_idx = np.random.choice(len(X_unobserved), 1, replace=False)[0]
-    new_observed_idx = unobserved_idx[most_uncertain_idx]
+    most_uncertain_idxs = np.random.choice(len(X_unobserved), num_per_round, replace=False)
+    new_observed_idxs = [unobserved_idx[i] for i in most_uncertain_idxs]
 
-    X_observed = np.vstack((X_observed, X[new_observed_idx, :]))
-    y_observed = np.append(y_observed, y[new_observed_idx])
+    X_observed = np.vstack((X_observed, X[new_observed_idxs, :]))
+    y_observed = np.append(y_observed, y[new_observed_idxs])
 
     # Remove the selected data point from the unobserved set
-    unobserved_idx = np.delete(unobserved_idx, most_uncertain_idx)
+    unobserved_idx = np.setdiff1d(unobserved_idx, new_observed_idxs)
     X_unobserved = X[unobserved_idx, :]
+    y_unobserved = y[unobserved_idx]
 
     # 100 should be tunable
-    while len(X_observed) <= 100:
+    while len(X_observed) <= len(X):
+        print(len(X_observed))
         # Train a random forest classifier on the observed data
         model = _get_lr() if criterion == "lr" else _get_rf()
         model.fit(X_observed, y_observed)
 
-        if len(X_observed) == 100:
+        if len(X_observed) == len(X):
+            y_pred = model.predict(X_observed)
+            _get_performance(model, X_observed, y_observed, y_pred)
             observed_accuracy_scores.append(np.mean(cross_val_score(model, X_observed, y_observed)))
             break
 
         # key component in adjusting the criterion used
         # passive learning methods
-        most_uncertain_idx = np.random.choice(len(X_unobserved), 1, replace=False)[0]
+        most_uncertain_idxs = np.random.choice(len(X_unobserved), num_per_round, replace=False)
+        new_observed_idxs = [unobserved_idx[i] for i in most_uncertain_idxs]
 
-        new_observed_idx = unobserved_idx[most_uncertain_idx]
-
-        X_observed = np.vstack((X_observed, X[new_observed_idx, :]))
-        y_observed = np.append(y_observed, y[new_observed_idx])
+        X_observed = np.vstack((X_observed, X[new_observed_idxs, :]))
+        y_observed = np.append(y_observed, y[new_observed_idxs])
 
         # Remove the selected data point from the unobserved set
-        unobserved_idx = np.delete(unobserved_idx, most_uncertain_idx)
+        unobserved_idx = np.setdiff1d(unobserved_idx, new_observed_idxs)
         X_unobserved = X[unobserved_idx, :]
         y_unobserved = y[unobserved_idx]
 
         observed_accuracy_scores.append(np.mean(cross_val_score(model, X_observed, y_observed)))
-    print(len(X_unobserved))
+    return observed_accuracy_scores
 
-    observed_res.append(observed_accuracy_scores)
-    # rounds = len(train_accuracy_scores) + 1
-    print(len(observed_res))
-    print(observed_res)
-    print("len observed_accuracy_scores", len(observed_res[0]))
+
+def result_logging(val, name):
+    with open(name, 'w') as f:
+        for item in val:
+            f.write("%s\n" % item)
+
+
+def timeit(func):
+    """
+    decorator used to evaluate the time consumed in each simulation
+    :param func:
+    :return:
+    """
+
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        start_time = time.time()  # start the timer
+        result = func(*args, **kwargs)
+        end_time = time.time()  # stop the timer
+        elapsed_minutes = (end_time - start_time) / 60  # calculate the elapsed time in minutes
+        print(f"Elapsed time: {elapsed_minutes:.2f} minutes")
+        return result
+
+    return wrapper

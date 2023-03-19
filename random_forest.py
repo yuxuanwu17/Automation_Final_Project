@@ -1,7 +1,9 @@
+import pandas as pd
 from sklearn.metrics import confusion_matrix, accuracy_score
 from sklearn.ensemble import RandomForestClassifier
 
-from utils import _get_performance, _get_train_test_split
+from utils import _get_performance, _get_train_test_split, _get_passive_index_split, _active_learning_simulation, \
+    result_logging, timeit
 
 
 def rf_machine_learning():
@@ -22,5 +24,13 @@ def rf_machine_learning():
 
     _get_performance(clf, X_test, y_test, y_pred)
 
+@timeit
+def rf_passive_learning():
+    X, y, observed_idx = _get_passive_index_split()
+    res = _active_learning_simulation(X, y, "rf", observed_idx)
+    result_logging(res, "rf_acc_res.txt")
+
+
 if __name__ == '__main__':
-    rf_machine_learning()
+    # rf_machine_learning()
+    rf_passive_learning()
