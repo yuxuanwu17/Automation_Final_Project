@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score, matthews_corrcoef
+from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score, matthews_corrcoef, confusion_matrix
 from sklearn.metrics import roc_auc_score, average_precision_score
 from prettytable import PrettyTable
 from sklearn.model_selection import train_test_split
@@ -47,5 +47,5 @@ def _get_performance(clf, X_test, y_test, y_pred):
     table.add_column(column_names[4], np.round(precision_scores, 4))
     table.add_column(column_names[5], np.round(f1_scores, 4))
     table.add_column(column_names[6], np.round(MCCs, 4))
-
+    print(confusion_matrix(y_test, y_pred))
     print(table)
