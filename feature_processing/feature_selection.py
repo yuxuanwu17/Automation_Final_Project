@@ -5,7 +5,7 @@ from sklearn.model_selection import train_test_split
 import time
 
 np.random.seed(33)
-df = pd.read_csv("data/Cleaned_dat_encoded.csv")
+df = pd.read_csv("../data/Cleaned_dat_encoded.csv")
 Y = df["disposition"]
 X = df.drop("disposition", axis=1)
 
