@@ -180,6 +180,11 @@ def _active_learning_simulation(X, y, criterion, observed_idx, num_per_round=10_
         model.fit(X_observed, y_observed)
 
         if len(X_observed) + num_per_round >= len(X):
+            y_pred = model.predict(X_unobserved)
+            accuracy_scores, f1_scores, recall_scores, precision_scores, MCCs, auROCs, auPRCs = _append_5value_performance(
+                model, X_unobserved, y_unobserved, y_pred, accuracy_scores, f1_scores,
+                recall_scores, precision_scores,
+                MCCs, auROCs, auPRCs)
             break
 
         # key component in adjusting the criterion used
