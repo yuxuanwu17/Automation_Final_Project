@@ -72,6 +72,18 @@ def _get_performance(clf, X_test, y_test, y_pred):
     print(table)
 
 
+def _append_5value_performance(clf, X_test, y_test, y_pred, accuracy_scores, f1_scores, recall_scores, precision_scores,
+                               MCCs, auROCs, auPRCs):
+    accuracy_scores.append(np.round(accuracy_score(y_true=y_test, y_pred=y_pred), 4))
+    f1_scores.append(np.round(f1_score(y_true=y_test, y_pred=y_pred), 4))
+    recall_scores.append(np.round(recall_score(y_true=y_test, y_pred=y_pred), 4))
+    precision_scores.append(np.round(precision_score(y_true=y_test, y_pred=y_pred), 4))
+    MCCs.append(np.round(matthews_corrcoef(y_true=y_test, y_pred=y_pred), 4))
+    auROCs.append(np.round(roc_auc_score(y_true=y_test, y_score=clf.predict_proba(X_test)[:, 1]), 4))
+    auPRCs.append(np.round(average_precision_score(y_true=y_test, y_score=clf.predict_proba(X_test)[:, 0]), 4))
+    return accuracy_scores, f1_scores, recall_scores, precision_scores, MCCs, auROCs, auPRCs
+
+
 def _get_lr():
     c = 0.01
     penalty = 'l2'
@@ -94,7 +106,14 @@ def _get_rf():
 
 
 def _init_fixed_20_samples_lr(X, y, observed_idx, criterion):
-    observed_accuracy_scores = []
+    accuracy_scores = []
+    f1_scores = []
+    recall_scores = []
+    precision_scores = []
+    MCCs = []
+    auROCs = []
+    auPRCs = []
+
     data_num = len(X)
 
     # 20 is the number specified as the start number of observation
@@ -109,9 +128,14 @@ def _init_fixed_20_samples_lr(X, y, observed_idx, criterion):
     model.fit(X_observed, y_observed)
 
     # Get the accuracy for observed and unobserved
-    observed_accuracy = np.mean(cross_val_score(model, X_observed, y_observed))
-    observed_accuracy_scores.append(observed_accuracy)
-    return observed_accuracy_scores, model, X_unobserved, y_unobserved, X_observed, y_observed, unobserved_idx
+    # change this to the standard 5 values evaluation
+    y_pred = model.predict(X_unobserved)
+    accuracy_scores, f1_scores, recall_scores, precision_scores, MCCs, auROCs, auPRCs = _append_5value_performance(
+        model, X_unobserved, y_unobserved, y_pred, accuracy_scores, f1_scores,
+        recall_scores, precision_scores,
+        MCCs, auROCs, auPRCs)
+    return accuracy_scores, f1_scores, recall_scores, precision_scores, MCCs, auROCs, auPRCs, model, X_unobserved, \
+        y_unobserved, X_observed, y_observed, unobserved_idx
 
 
 def _active_learning_simulation(X, y, criterion, observed_idx, num_per_round=10_000):
@@ -127,7 +151,7 @@ def _active_learning_simulation(X, y, criterion, observed_idx, num_per_round=10_
     as a function of the number of instances in the training data set.
 
     """
-    observed_accuracy_scores, model, X_unobserved, y_unobserved, X_observed, y_observed, unobserved_idx = _init_fixed_20_samples_lr(
+    accuracy_scores, f1_scores, recall_scores, precision_scores, MCCs, auROCs, auPRCs, model, X_unobserved, y_unobserved, X_observed, y_observed, unobserved_idx = _init_fixed_20_samples_lr(
         X, y, observed_idx, criterion)
 
     # key component in adjusting the criterion used
@@ -141,18 +165,21 @@ def _active_learning_simulation(X, y, criterion, observed_idx, num_per_round=10_
     unobserved_idx = np.setdiff1d(unobserved_idx, new_observed_idxs)
     X_unobserved = X[unobserved_idx, :]
     y_unobserved = y[unobserved_idx]
-
+    learning_round = []
     # 100 should be tunable
     while len(X_observed) <= len(X):
-        print(len(X_observed))
+        idx = len(learning_round)
+        # print(accuracy_scores)
+        print(
+            f"learning_round:{len(X_observed)}, acc: {accuracy_scores[idx]}, f1: {f1_scores[idx]},"
+            f"recall: {recall_scores[idx]}, precision: {precision_scores[idx]}, mcc: {MCCs[idx]}, auROC: {auROCs[idx]}, "
+            f"auPRC: {auPRCs[idx]}")
+        learning_round.append(len(X_observed))
         # Train a random forest classifier on the observed data
         model = _get_lr() if criterion == "lr" else _get_rf()
         model.fit(X_observed, y_observed)
 
-        if len(X_observed) == len(X):
-            y_pred = model.predict(X_observed)
-            _get_performance(model, X_observed, y_observed, y_pred)
-            observed_accuracy_scores.append(np.mean(cross_val_score(model, X_observed, y_observed)))
+        if len(X_observed) + num_per_round >= len(X):
             break
 
         # key component in adjusting the criterion used
@@ -167,9 +194,13 @@ def _active_learning_simulation(X, y, criterion, observed_idx, num_per_round=10_
         unobserved_idx = np.setdiff1d(unobserved_idx, new_observed_idxs)
         X_unobserved = X[unobserved_idx, :]
         y_unobserved = y[unobserved_idx]
-
-        observed_accuracy_scores.append(np.mean(cross_val_score(model, X_observed, y_observed)))
-    return observed_accuracy_scores
+        # unobserved_accuracy_scores.append(np.mean(cross_val_score(model, X_unobserved, y_unobserved)))
+        y_pred = model.predict(X_unobserved)
+        accuracy_scores, f1_scores, recall_scores, precision_scores, MCCs, auROCs, auPRCs = _append_5value_performance(
+            model, X_unobserved, y_unobserved, y_pred, accuracy_scores, f1_scores,
+            recall_scores, precision_scores,
+            MCCs, auROCs, auPRCs)
+    return accuracy_scores, f1_scores, recall_scores, precision_scores, MCCs, auROCs, auPRCs, learning_round
 
 
 def result_logging(val, name):

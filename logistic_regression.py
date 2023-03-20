@@ -22,8 +22,20 @@ def lr_machine_learning():
 @timeit
 def lr_passive_learning():
     X, y, observed_idx = _get_passive_index_split()
-    res = _active_learning_simulation(X, y, "lr", observed_idx)
-    result_logging(res, "lr_acc_res.txt")
+    accuracy_scores, f1_scores, recall_scores, precision_scores, MCCs, auROCs, auPRCs, learning_round = _active_learning_simulation(
+        X,
+        y,
+        "lr",
+        observed_idx)
+
+    result_logging(accuracy_scores, "res/lr/lr_acc_res.txt")
+    result_logging(f1_scores, "res/lr/lr_f1_res.txt")
+    result_logging(recall_scores, "res/lr/lr_recall_res.txt")
+    result_logging(precision_scores, "res/lr/lr_precision_res.txt")
+    result_logging(MCCs, "res/lr/lr_mcc_res.txt")
+    result_logging(auROCs, "res/lr/lr_auROC_res.txt")
+    result_logging(auPRCs, "res/lr/lr_auPRC_res.txt")
+    result_logging(learning_round, "res/lr/lr_learning_round_res.txt")
 
 
 if __name__ == '__main__':

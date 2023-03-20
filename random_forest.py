@@ -24,11 +24,24 @@ def rf_machine_learning():
 
     _get_performance(clf, X_test, y_test, y_pred)
 
+
 @timeit
 def rf_passive_learning():
     X, y, observed_idx = _get_passive_index_split()
-    res = _active_learning_simulation(X, y, "rf", observed_idx)
-    result_logging(res, "rf_acc_res.txt")
+    accuracy_scores, f1_scores, recall_scores, precision_scores, MCCs, auROCs, auPRCs, learning_round = _active_learning_simulation(
+        X,
+        y,
+        "rf",
+        observed_idx)
+
+    result_logging(accuracy_scores, "res/rf/rf_acc_res.txt")
+    result_logging(f1_scores, "res/rf/rf_f1_res.txt")
+    result_logging(recall_scores, "res/rf/rf_recall_res.txt")
+    result_logging(precision_scores, "res/rf/rf_precision_res.txt")
+    result_logging(MCCs, "res/rf/rf_mcc_res.txt")
+    result_logging(auROCs, "res/rf/rf_auROC_res.txt")
+    result_logging(auPRCs, "res/rf/rf_auPRC_res.txt")
+    result_logging(learning_round, "res/rf/rf_learning_round_res.txt")
 
 
 if __name__ == '__main__':
