@@ -154,6 +154,7 @@ def _active_learning_simulation(X, y, criterion, observed_idx, num_per_round=10_
     accuracy_scores, f1_scores, recall_scores, precision_scores, MCCs, auROCs, auPRCs, model, X_unobserved, y_unobserved, X_observed, y_observed, unobserved_idx = _init_fixed_20_samples_lr(
         X, y, observed_idx, criterion)
 
+    learning_round = [len(observed_idx)]
     # key component in adjusting the criterion used
     most_uncertain_idxs = np.random.choice(len(X_unobserved), num_per_round, replace=False)
     new_observed_idxs = [unobserved_idx[i] for i in most_uncertain_idxs]
@@ -165,10 +166,9 @@ def _active_learning_simulation(X, y, criterion, observed_idx, num_per_round=10_
     unobserved_idx = np.setdiff1d(unobserved_idx, new_observed_idxs)
     X_unobserved = X[unobserved_idx, :]
     y_unobserved = y[unobserved_idx]
-    learning_round = []
     # 100 should be tunable
     while len(X_observed) <= len(X):
-        idx = len(learning_round)
+        idx = len(learning_round) - 1
         # print(accuracy_scores)
         print(
             f"learning_round:{len(X_observed)}, acc: {accuracy_scores[idx]}, f1: {f1_scores[idx]},"
