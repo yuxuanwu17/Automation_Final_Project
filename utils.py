@@ -15,7 +15,7 @@ from sklearn.preprocessing import StandardScaler
 
 def _get_train_test_split():
     np.random.seed(33)
-    df = pd.read_csv("./data/featureSelectedAllDataWithY.csv")
+    df = pd.read_csv("./data/20000_reduced_featureSelectedAllDataWithY.csv")
     print(df.shape)
 
     training_data, testing_data = train_test_split(df, test_size=0.2, random_state=25, shuffle=True)
@@ -29,7 +29,7 @@ def _get_train_test_split():
 
 def _get_passive_index_split(init_observed=100_000):
     np.random.seed(33)
-    df = pd.read_csv("./data/featureSelectedAllDataWithY.csv")
+    df = pd.read_csv("./data/20000_reduced_featureSelectedAllDataWithY.csv")
     print(df.shape)
     y = df['disposition'].values
     X = StandardScaler().fit_transform(df.drop("disposition", axis=1))
@@ -37,7 +37,10 @@ def _get_passive_index_split(init_observed=100_000):
     print("y's type", type(y))
     total_num = len(X)
     print("total number for init", total_num)
-    observed_idx = np.random.choice(len(X), init_observed, replace=False)
+    # read the idx from the initial_idx
+    observed_idx = np.loadtxt("data/initial_index.txt", dtype=int)
+    print(observed_idx)
+    # observed_idx = np.random.choice(len(X), init_observed, replace=False)
     print("init number for observed index", len(observed_idx))
     return X, y, observed_idx
 
