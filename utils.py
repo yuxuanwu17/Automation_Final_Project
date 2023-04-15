@@ -13,8 +13,8 @@ from sklearn.model_selection import train_test_split, cross_val_score
 from sklearn.preprocessing import StandardScaler
 
 
-def _get_train_test_split():
-    np.random.seed(33)
+def _get_train_test_split(s):
+    np.random.seed(s)
     df = pd.read_csv("./data/20000_reduced_featureSelectedAllDataWithY.csv")
     print(df.shape)
 
@@ -45,7 +45,7 @@ def _get_passive_index_split(init_observed=100_000):
     return X, y, observed_idx
 
 
-def _get_performance(clf, X_test, y_test, y_pred):
+def _get_performance(clf_list, X_test_list, y_test_list, y_pred_list):
     accuracy_scores = []
     f1_scores = []
     recall_scores = []
@@ -54,24 +54,27 @@ def _get_performance(clf, X_test, y_test, y_pred):
     auROCs = []
     auPRCs = []
 
-    accuracy_scores.append(accuracy_score(y_true=y_test, y_pred=y_pred))
-    f1_scores.append(f1_score(y_true=y_test, y_pred=y_pred))
-    recall_scores.append(recall_score(y_true=y_test, y_pred=y_pred))
-    precision_scores.append(precision_score(y_true=y_test, y_pred=y_pred))
-    MCCs.append(matthews_corrcoef(y_true=y_test, y_pred=y_pred))
-    auROCs.append(roc_auc_score(y_true=y_test, y_score=clf.predict_proba(X_test)[:, 1]))
-    auPRCs.append(average_precision_score(y_true=y_test, y_score=clf.predict_proba(X_test)[:, 0]))
+    for i in range(10):
+        clf, X_test, y_test, y_pred = clf_list[i], X_test_list[i], y_test_list[i], y_pred_list[i]
+
+        accuracy_scores.append(accuracy_score(y_true=y_test, y_pred=y_pred))
+        f1_scores.append(f1_score(y_true=y_test, y_pred=y_pred))
+        recall_scores.append(recall_score(y_true=y_test, y_pred=y_pred))
+        precision_scores.append(precision_score(y_true=y_test, y_pred=y_pred))
+        MCCs.append(matthews_corrcoef(y_true=y_test, y_pred=y_pred))
+        auROCs.append(roc_auc_score(y_true=y_test, y_score=clf.predict_proba(X_test)[:, 1]))
+        auPRCs.append(average_precision_score(y_true=y_test, y_score=clf.predict_proba(X_test)[:, 0]))
 
     table = PrettyTable()
     column_names = ['Accuracy', 'auROC', 'auPRC', 'recall', 'precision', 'f1', 'MCC']
-    table.add_column(column_names[0], np.round(accuracy_scores, 4))
-    table.add_column(column_names[1], np.round(auROCs, 4))
-    table.add_column(column_names[2], np.round(auPRCs, 4))
-    table.add_column(column_names[3], np.round(recall_scores, 4))
-    table.add_column(column_names[4], np.round(precision_scores, 4))
-    table.add_column(column_names[5], np.round(f1_scores, 4))
-    table.add_column(column_names[6], np.round(MCCs, 4))
-    print(confusion_matrix(y_test, y_pred))
+    table.add_column(column_names[0], [np.round(np.mean(accuracy_scores), 4)])
+    table.add_column(column_names[1], [np.round(np.mean(auROCs), 4)])
+    table.add_column(column_names[2], [np.round(np.mean(auPRCs), 4)])
+    table.add_column(column_names[3], [np.round(np.mean(recall_scores), 4)])
+    table.add_column(column_names[4], [np.round(np.mean(precision_scores), 4)])
+    table.add_column(column_names[5], [np.round(np.mean(f1_scores), 4)])
+    table.add_column(column_names[6], [np.round(np.mean(MCCs), 4)])
+    # print(confusion_matrix(y_test, y_pred))
     print(table)
 
 

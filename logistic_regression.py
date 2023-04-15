@@ -6,17 +6,24 @@ from utils import _get_performance, _get_train_test_split, _get_passive_index_sp
 
 
 def lr_machine_learning():
-    X_train, y_train, X_test, y_test = _get_train_test_split()
-    c = 0.01
-    penalty = 'l2'
-    solver = 'saga'
+    clf_list, X_test_list, y_test_list, y_pred_list = [], [], [], []
+    for i in range(10):
+        X_train, y_train, X_test, y_test = _get_train_test_split(i)
+        X_test_list.append(X_test)
+        y_test_list.append(y_test)
+        c = 0.01
+        penalty = 'l2'
+        solver = 'saga'
 
-    clf = LogisticRegression(random_state=0, class_weight="balanced", C=c, penalty=penalty, solver=solver).fit(X_train,
-                                                                                                               y_train)
+        clf = LogisticRegression(random_state=0, class_weight="balanced", C=c, penalty=penalty, solver=solver).fit(
+            X_train,
+            y_train)
+        clf_list.append(clf)
 
-    y_pred = clf.predict(X_test)
+        y_pred = clf.predict(X_test)
+        y_pred_list.append(y_pred)
 
-    _get_performance(clf, X_test, y_test, y_pred)
+    _get_performance(clf_list, X_test_list, y_test_list, y_pred_list)
 
 
 @timeit
@@ -39,7 +46,7 @@ def lr_passive_learning(num_per_round):
 
 
 if __name__ == '__main__':
-    # lr_machine_learning()
-    lr_passive_learning(250)
-    lr_passive_learning(500)
-    lr_passive_learning(1000)
+    lr_machine_learning()
+    # lr_passive_learning(250)
+    # lr_passive_learning(500)
+    # lr_passive_learning(1000)

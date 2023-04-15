@@ -7,22 +7,30 @@ from utils import _get_performance, _get_train_test_split, _get_passive_index_sp
 
 
 def rf_machine_learning():
-    X_train, y_train, X_test, y_test = _get_train_test_split()
-    bootstrap = True
-    max_depth = 80
-    max_features = 2
-    min_samples_leaf = 3
-    min_samples_split = 8
-    n_estimators = 1000
+    clf_list, X_test_list, y_test_list, y_pred_list = [], [], [], []
+    for i in range(10):
+        X_train, y_train, X_test, y_test = _get_train_test_split(i)
+        X_test_list.append(X_test)
+        y_test_list.append(y_test)
 
-    clf = RandomForestClassifier(random_state=0, class_weight="balanced", bootstrap=bootstrap, max_depth=max_depth,
-                                 max_features=max_features, min_samples_leaf=min_samples_leaf,
-                                 min_samples_split=min_samples_split,
-                                 n_estimators=n_estimators).fit(X_train, y_train)
+        bootstrap = True
+        max_depth = 80
+        max_features = 2
+        min_samples_leaf = 3
+        min_samples_split = 8
+        n_estimators = 1000
 
-    y_pred = clf.predict(X_test)
+        clf = RandomForestClassifier(random_state=0, class_weight="balanced", bootstrap=bootstrap, max_depth=max_depth,
+                                     max_features=max_features, min_samples_leaf=min_samples_leaf,
+                                     min_samples_split=min_samples_split,
+                                     n_estimators=n_estimators).fit(X_train, y_train)
 
-    _get_performance(clf, X_test, y_test, y_pred)
+        clf_list.append(clf)
+
+        y_pred = clf.predict(X_test)
+        y_pred_list.append(y_pred)
+
+    _get_performance(clf_list, X_test_list, y_test_list, y_pred_list)
 
 
 @timeit
@@ -46,6 +54,6 @@ def rf_passive_learning(num_per_round):
 
 if __name__ == '__main__':
     rf_machine_learning()
-    rf_passive_learning(250)
-    rf_passive_learning(500)
-    rf_passive_learning(1000)
+    # rf_passive_learning(250)
+    # rf_passive_learning(500)
+    # rf_passive_learning(1000)
