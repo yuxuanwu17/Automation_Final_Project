@@ -1,0 +1,4 @@
+# 02-750: Automation of Scientific Research Final Project
+
+## Description
+Emergency department visit is one of the most common ways to get medical support, and ED visit is the largest source of hospital admissions. Meanwhile, whether to admit a patient mainly depends on patients’ conditions, which include thousands of factors and indicators. For doctors at emergency department, it is difficult for them to make the decision accurately considering all the numbers in a short time. So, our motivation is to improve the running efficiency of ED, optimize the resource allocation, as well as to enable more patients to get appropriate treatment. And after we learned active learning this semester, we are curious about whether it can do better than traditional machine learning in this binary classification task, using electronic health records as our dataset.
