@@ -30,7 +30,7 @@ def rf_machine_learning():
         y_pred = clf.predict(X_test)
         y_pred_list.append(y_pred)
 
-    _get_performance(clf_list, X_test_list, y_test_list, y_pred_list)
+    _get_performance(clf_list, X_test_list, y_test_list, y_pred_list, 'rf')
 
 
 @timeit

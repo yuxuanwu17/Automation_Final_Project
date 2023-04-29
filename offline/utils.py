@@ -14,11 +14,10 @@ from sklearn.preprocessing import StandardScaler
 
 
 def _get_train_test_split(s):
-    np.random.seed(s)
-    df = pd.read_csv("./data/20000_reduced_featureSelectedAllDataWithY.csv")
+    df = pd.read_csv("../data/20000_reduced_featureSelectedAllDataWithY.csv")
     print(df.shape)
 
-    training_data, testing_data = train_test_split(df, test_size=0.2, random_state=25, shuffle=True)
+    training_data, testing_data = train_test_split(df, test_size=0.2, random_state=s, shuffle=True)
 
     y_train = training_data['disposition']
     y_test = testing_data['disposition']
@@ -29,7 +28,7 @@ def _get_train_test_split(s):
 
 def _get_passive_index_split(init_observed=100_000):
     np.random.seed(33)
-    df = pd.read_csv("./data/20000_reduced_featureSelectedAllDataWithY.csv")
+    df = pd.read_csv("../data/20000_reduced_featureSelectedAllDataWithY.csv")
     print(df.shape)
     y = df['disposition'].values
     X = StandardScaler().fit_transform(df.drop("disposition", axis=1))
@@ -38,14 +37,14 @@ def _get_passive_index_split(init_observed=100_000):
     total_num = len(X)
     print("total number for init", total_num)
     # read the idx from the initial_idx
-    observed_idx = np.loadtxt("data/initial_index.txt", dtype=int)
+    observed_idx = np.loadtxt("../data/initial_index.txt", dtype=int)
     print(observed_idx)
     # observed_idx = np.random.choice(len(X), init_observed, replace=False)
     print("init number for observed index", len(observed_idx))
     return X, y, observed_idx
 
 
-def _get_performance(clf_list, X_test_list, y_test_list, y_pred_list):
+def _get_performance(clf_list, X_test_list, y_test_list, y_pred_list, type="lr"):
     accuracy_scores = []
     f1_scores = []
     recall_scores = []
@@ -57,25 +56,29 @@ def _get_performance(clf_list, X_test_list, y_test_list, y_pred_list):
     for i in range(10):
         clf, X_test, y_test, y_pred = clf_list[i], X_test_list[i], y_test_list[i], y_pred_list[i]
 
-        accuracy_scores.append(accuracy_score(y_true=y_test, y_pred=y_pred))
-        f1_scores.append(f1_score(y_true=y_test, y_pred=y_pred))
-        recall_scores.append(recall_score(y_true=y_test, y_pred=y_pred))
-        precision_scores.append(precision_score(y_true=y_test, y_pred=y_pred))
-        MCCs.append(matthews_corrcoef(y_true=y_test, y_pred=y_pred))
-        auROCs.append(roc_auc_score(y_true=y_test, y_score=clf.predict_proba(X_test)[:, 1]))
-        auPRCs.append(average_precision_score(y_true=y_test, y_score=clf.predict_proba(X_test)[:, 0]))
-
-    table = PrettyTable()
-    column_names = ['Accuracy', 'auROC', 'auPRC', 'recall', 'precision', 'f1', 'MCC']
-    table.add_column(column_names[0], [np.round(np.mean(accuracy_scores), 4)])
-    table.add_column(column_names[1], [np.round(np.mean(auROCs), 4)])
-    table.add_column(column_names[2], [np.round(np.mean(auPRCs), 4)])
-    table.add_column(column_names[3], [np.round(np.mean(recall_scores), 4)])
-    table.add_column(column_names[4], [np.round(np.mean(precision_scores), 4)])
-    table.add_column(column_names[5], [np.round(np.mean(f1_scores), 4)])
-    table.add_column(column_names[6], [np.round(np.mean(MCCs), 4)])
+        accuracy_scores.append(round(accuracy_score(y_true=y_test, y_pred=y_pred), 4))
+        f1_scores.append(round(f1_score(y_true=y_test, y_pred=y_pred), 4))
+        recall_scores.append(round(recall_score(y_true=y_test, y_pred=y_pred), 4))
+        precision_scores.append(round(precision_score(y_true=y_test, y_pred=y_pred), 4))
+        MCCs.append(round(matthews_corrcoef(y_true=y_test, y_pred=y_pred), 4))
+        auROCs.append(round(roc_auc_score(y_true=y_test, y_score=clf.predict_proba(X_test)[:, 1]), 4))
+        auPRCs.append(round(average_precision_score(y_true=y_test, y_score=clf.predict_proba(X_test)[:, 0]), 4))
+    num_per_round = "ml"
+    result_logging(accuracy_scores, f"res/{type}/{type}_acc_res_{num_per_round}.txt")
+    result_logging(f1_scores, f"res/{type}/{type}_f1_res_{num_per_round}.txt")
+    result_logging(recall_scores, f"res/{type}/{type}_recall_res_{num_per_round}.txt")
+    result_logging(precision_scores, f"res/{type}/{type}_precision_res_{num_per_round}.txt")
+    result_logging(MCCs, f"res/{type}/{type}_mcc_res_{num_per_round}.txt")
+    result_logging(auROCs, f"res/{type}/{type}_auROC_res_{num_per_round}.txt")
+    result_logging(auPRCs, f"res/{type}/{type}_auPRC_res_{num_per_round}.txt")
+    print(accuracy_scores)
+    print(f1_scores)
+    print(recall_scores)
+    print(precision_scores)
+    print(MCCs)
+    print(auROCs)
+    print(auPRCs)
     # print(confusion_matrix(y_test, y_pred))
-    print(table)
 
 
 def _append_5value_performance(clf, X_test, y_test, y_pred, accuracy_scores, f1_scores, recall_scores, precision_scores,
