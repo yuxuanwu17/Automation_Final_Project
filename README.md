@@ -16,7 +16,7 @@ The Electronic Health Record (EHR) data we use was from a paper published on [PL
 ## Workflow
 
 <p align="center">
-    <img src="https://github.com/yuxuanwu17/Automation_Final_Project/tree/main/figures/Workflow.png" height="500" width="500" alt = "workflow"/>
+    <img src="https://github.com/yuxuanwu17/Automation_Final_Project/blob/main/figures/workflow.png" height="500" width="700" alt = "workflow"/>
 </p>
 
 
