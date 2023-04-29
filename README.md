@@ -27,7 +27,7 @@ The Electronic Health Record (EHR) data we use was from a paper published on [PL
 * `offline` folder: includes scripts of offline learning.
 * `active_learning`: includes scripts of active learning.
 * `preprocessing` folder: includes scripts for data pre-processing, including removing NA columns and rows, label encoding and so on.
-* `Data` folder: includes the final data (20,000 records, 100 features) we used for model training and testing.
+* `data` folder: includes the final data (20,000 records, 100 features) we used for model training and testing.
 
 
 ## Authors
