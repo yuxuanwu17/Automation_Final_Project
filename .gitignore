@@ -1,6 +1,5 @@
 .idea
 .gitattributes
-/data/20000_reduced_featureSelectedAllDataWithY.csv
 /data/Cleaned_dat.csv
 /data/Cleaned_dat_encoded.csv
 /data/featureSelectedAllDataWithY.csv
