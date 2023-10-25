@@ -31,7 +31,7 @@ The Electronic Health Record (EHR) data we use was from a paper published on [PL
 
 
 ## Authors
-* Yanjing Li, yanjing2@andrew.cmu.edu/liyanjing12138@gmail.com, Carnegie Mellon University
-* Sitong Liu, sitongli@andrew.cmu.edu, Carnegie Mellon University
-* Xin Wang, xinwang3@andrew.cmu.edu, Carnegie Mellon University
-* Yuxuan Wu, yuxuanwu@andrew.cmu.edu, Carnegie Mellon University
+* Yanjing Li, yanjing2@alumni.cmu.edu/liyanjing12138@gmail.com, Carnegie Mellon University
+* Sitong Liu, sitongli@alumni.cmu.edu, Carnegie Mellon University
+* Xin Wang, xinwang3@alumni.cmu.edu, Carnegie Mellon University
+* Yuxuan Wu, yuxuanwu@alumni.cmu.edu, Carnegie Mellon University
